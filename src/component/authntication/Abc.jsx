@@ -26,6 +26,7 @@ import { useMsal } from "@azure/msal-react";
 import { tokenRequest } from "../../auth-config"
 import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
+import Multichoicerestrictedoptions from '../question/Multichoicerestrictedoptions'
 
 const Abc = () => {
   const { instance } = useMsal();
@@ -37,6 +38,14 @@ const dummyData = {
   options: ["Python", "React", "Java", "HTML", "C++"],
   isMultiSelect: true
 };
+const multichoicerestrictedoptions_question = "Which of the following services are provided by Microsoft Azure?";
+  const multichoicerestrictedoptions_options = [
+    "Azure Virtual Machines",
+    "Amazon S3",
+    "Azure Functions",
+    "Google Cloud BigQuery",
+    "Azure Kubernetes Service"
+  ];
 
   const callApi = async () => {
     try {
@@ -69,7 +78,9 @@ const dummyData = {
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       <MutipleOptionQuestion data={dummyData} />
+      <Multichoicerestrictedoptions question={multichoicerestrictedoptions_question} options={multichoicerestrictedoptions_options}/>
     </div>
+    
     </>
     
   );
