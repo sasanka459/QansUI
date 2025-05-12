@@ -26,6 +26,7 @@ import { useMsal } from "@azure/msal-react";
 import { tokenRequest } from "../../auth-config"
 import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
+import MatchingQnsAns from "../question/MatchingQnsAns.tsx";
 
 const Abc = () => {
   const { instance } = useMsal();
@@ -69,6 +70,7 @@ const dummyData = {
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       <MutipleOptionQuestion data={dummyData} />
+      <MatchingQnsAns />
     </div>
     </>
     
