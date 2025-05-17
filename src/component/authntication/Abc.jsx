@@ -26,6 +26,7 @@ import { useMsal } from "@azure/msal-react";
 import { tokenRequest } from "../../auth-config"
 import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
+import MulitipledropdownQuestion from '../question/MulitipledropdownQuestion'
 
 const Abc = () => {
   const { instance } = useMsal();
@@ -37,6 +38,29 @@ const dummyData = {
   options: ["Python", "React", "Java", "HTML", "C++"],
   isMultiSelect: true
 };
+const options = [
+  "Platform as a service (PaaS)",
+  "Infrastructure as a service (IaaS)",
+  "Software as a service (SaaS)",
+];
+
+const initialQuestions = [
+  { id: 1, label: "Azure Virtual Machines", answer: "" },
+  { id: 2, label: "Azure App Service", answer: "" },
+];
+const [questions, setQuestions] = useState(initialQuestions);
+
+  const handleChange = (id, value) => {
+    const updated = questions.map((q) =>
+      q.id === id ? { ...q, answer: value } : q
+    );
+    setQuestions(updated);
+  };
+
+  const handleSubmit = () => {
+    console.log("Selected Answers:", questions);
+    alert("Check console for selected answers!");
+  };
 
   const callApi = async () => {
     try {
@@ -69,6 +93,31 @@ const dummyData = {
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       <MutipleOptionQuestion data={dummyData} />
+       <div className="App" style={{ padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
+      <h2>Select the correct cloud service model</h2>
+      {questions.map((question) => (
+        <MulitipledropdownQuestion
+          key={question.id}
+          question={question}
+          options={options}
+          onChange={handleChange}
+        />
+      ))}
+      <button
+        onClick={handleSubmit}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#0078D4",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          marginTop: "20px",
+        }}
+      >
+        Submit
+      </button>
+    </div>
     </div>
     </>
     
