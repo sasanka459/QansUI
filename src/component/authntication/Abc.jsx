@@ -27,6 +27,9 @@ import { tokenRequest } from "../../auth-config"
 import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
 import Multichoicerestrictedoptions from '../question/Multichoicerestrictedoptions'
+import Dropdowninsidetext from '../question/Dropdowninsidetext'
+import MatchingQnsAns from "../question/MatchingQnsAns.tsx";
+
 
 const Abc = () => {
   const { instance } = useMsal();
@@ -78,7 +81,17 @@ const multichoicerestrictedoptions_question = "Which of the following services a
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       <MutipleOptionQuestion data={dummyData} />
+
       <Multichoicerestrictedoptions question={multichoicerestrictedoptions_question} options={multichoicerestrictedoptions_options}/>
+      <Dropdowninsidetext
+       sentenceBefore="Which of the following"
+       sentenceAfter="are correct"
+       options={["Python", "React", "Java", "HTML", "C++"]}
+       defaultValue="Python"
+/>
+      <MatchingQnsAns />
+
+
     </div>
     
     </>
