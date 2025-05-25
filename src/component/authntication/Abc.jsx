@@ -27,6 +27,8 @@ import { tokenRequest } from "../../auth-config"
 import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
 import Dropdowninsidetext from '../question/Dropdowninsidetext'
+import MatchingQnsAns from "../question/MatchingQnsAns.tsx";
+
 
 const Abc = () => {
   const { instance } = useMsal();
@@ -70,12 +72,15 @@ const dummyData = {
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       <MutipleOptionQuestion data={dummyData} />
+
       <Dropdowninsidetext
        sentenceBefore="Which of the following"
        sentenceAfter="are correct"
        options={["Python", "React", "Java", "HTML", "C++"]}
        defaultValue="Python"
 />
+      <MatchingQnsAns />
+
     </div>
     </>
     
