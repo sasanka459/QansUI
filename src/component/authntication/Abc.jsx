@@ -26,6 +26,7 @@ import { useMsal } from "@azure/msal-react";
 import { tokenRequest } from "../../auth-config"
 import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
+import Multichoicerestrictedoptions from '../question/Multichoicerestrictedoptions'
 import Dropdowninsidetext from '../question/Dropdowninsidetext'
 import MatchingQnsAns from "../question/MatchingQnsAns.tsx";
 
@@ -40,6 +41,14 @@ const dummyData = {
   options: ["Python", "React", "Java", "HTML", "C++"],
   isMultiSelect: true
 };
+const multichoicerestrictedoptions_question = "Which of the following services are provided by Microsoft Azure?";
+  const multichoicerestrictedoptions_options = [
+    "Azure Virtual Machines",
+    "Amazon S3",
+    "Azure Functions",
+    "Google Cloud BigQuery",
+    "Azure Kubernetes Service"
+  ];
 
   const callApi = async () => {
     try {
@@ -73,6 +82,7 @@ const dummyData = {
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       <MutipleOptionQuestion data={dummyData} />
 
+      <Multichoicerestrictedoptions question={multichoicerestrictedoptions_question} options={multichoicerestrictedoptions_options}/>
       <Dropdowninsidetext
        sentenceBefore="Which of the following"
        sentenceAfter="are correct"
@@ -81,7 +91,9 @@ const dummyData = {
 />
       <MatchingQnsAns />
 
+
     </div>
+    
     </>
     
   );
