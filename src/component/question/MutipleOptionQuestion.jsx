@@ -16,8 +16,9 @@ const MutipleOptionQuestion = ({ data }) => {
   };
 
   return (
-    <div style={{ padding: "20px", border: "1px solid #ccc", width: "300px" }}>
-      <h3>{data.question}</h3>
+    <div style={{ padding: "20px", border: "1px solid #ccc", width: "100%" }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>{data.question}</h1>
+      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
       <ul style={{ listStyleType: "none", padding: 0 }}>
         {data.options.map((option, index) => (
           <li key={index}>
@@ -40,6 +41,7 @@ const MutipleOptionQuestion = ({ data }) => {
         ))}
       </ul>
       <p>Selected Answers: {selectedOptions.join(", ") || "None"}</p>
+      </div>
     </div>
   );
 };
