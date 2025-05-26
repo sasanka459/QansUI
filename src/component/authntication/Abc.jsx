@@ -28,7 +28,7 @@ import { NavigationBar } from '../NavigationBar'
 import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
 import Multichoicerestrictedoptions from '../question/Multichoicerestrictedoptions'
 import Dropdowninsidetext from '../question/Dropdowninsidetext'
-import MatchingQnsAns from "../question/MatchingQnsAns.tsx";
+import MatchingQnsAns from "../question/MatchingQsnAns/MatchingQnsAns.tsx";
 
 
 const Abc = () => {
