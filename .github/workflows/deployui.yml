@@ -26,6 +26,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
+
+    - name: Update Browserslist data
+      run: npx update-browserslist-db@latest
     
     - name: 'npm install, build, and test'
       run: |
