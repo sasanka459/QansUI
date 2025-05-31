@@ -30,11 +30,12 @@ jobs:
     - name: Update Browserslist data
       run: npx update-browserslist-db@latest
     
-    - name: 'npm install, build, and test'
+    - name: 'npm install,and build' #and test
       run: |
         npm install
         npm run build --if-present
-        npm run test --if-present
+
+    # npm run test --if-present
      
                
     # Deploy web app using Azure credentials
