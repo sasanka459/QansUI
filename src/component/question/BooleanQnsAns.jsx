@@ -12,35 +12,35 @@ function BooleanQnsAns() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-  console.log("State changed! submitted:", submitted);
-}, [submitted]);
   const handleChange = (id, value) => {
   setAnswers((prev) => ({ ...prev, [id]: value }));
   };
-
  
-const handleSubmit = () => {
-  debugger;
-  console.log("Submitting with Answers:", answers);
+  const handleSubmit = () => {
   setSubmitted(true);
-  console.log(answers[1]);
-  console.log("Updated Submitted State:", submitted);
+  };
 
-};
-console.log("Rendering with submitted:", submitted);
+    const getRadioStyle = (question, value) => {
+    if (!submitted) return {};
+    const isSelected = answers[question.id] === value;
+    if (!isSelected) return {};
+    const isCorrect = value === question.correct;
+    return {
+      //outline: "2px solid",
+      accentColor: isCorrect ? "green" : "red",
+      //borderRadius: "50%"
+    };
+  };
 
-
-  return (
+    return (
     <div className="flex justify-start p-6">
       <div className="max-w-3xl bg-white rounded-xl shadow-md space-y-4 text-left">
         <h1 className="text-xl font-bold mb-4">Group Questions</h1>
-          {questions.map((q) => (
-            <div key={q.id} style={ `${submitted && answers[q.id] === q.correct ?  "color: 'green';" : "color: 'red';" }`}
->
-            <p className="mb-2">{q.text}</p>
+        {questions.map((q) => (
+          <div key={q.id}>
+            <p className="mb-2 text-black">{q.text}</p>
             <div className="flex gap-4">
-              <label>
+              <label style={getRadioStyle(q, "Yes")}>
                 <input
                   type="radio"
                   name={`question-${q.id}`}
@@ -50,7 +50,7 @@ console.log("Rendering with submitted:", submitted);
                 />{" "}
                 Yes
               </label>
-              <label>
+              <label style={getRadioStyle(q, "No")}>
                 <input
                   type="radio"
                   name={`question-${q.id}`}
@@ -63,8 +63,16 @@ console.log("Rendering with submitted:", submitted);
             </div>
           </div>
         ))}
+
         <button
-          className="mt-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+         style={{
+                  padding: '6px 12px',
+                  backgroundColor: '#1890ff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
           onClick={handleSubmit}
         >
           Submit
@@ -72,6 +80,7 @@ console.log("Rendering with submitted:", submitted);
       </div>
     </div>
   );
+
 }
 
 export default BooleanQnsAns;
