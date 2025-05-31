@@ -29,6 +29,7 @@ import MutipleOptionQuestion from '../question/MutipleOptionQuestion'
 import Multichoicerestrictedoptions from '../question/Multichoicerestrictedoptions'
 import Dropdowninsidetext from '../question/Dropdowninsidetext'
 import MatchingQnsAns from "../question/MatchingQnsAns.tsx";
+import BooleanApp from "../question/BooleanQnsAns.jsx";
 import MultipleDropDownQns from "../question/MultipleDropDownQns.jsx";
 
 
@@ -90,6 +91,7 @@ const multichoicerestrictedoptions_question = "Which of the following services a
        options={["Python", "React", "Java", "HTML", "C++"]}
        defaultValue="Python"
 />
+      <BooleanApp />
       <MatchingQnsAns />
       <MultipleDropDownQns />;
 
