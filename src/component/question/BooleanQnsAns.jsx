@@ -25,17 +25,6 @@ function BooleanQnsAns() {
     setSubmitted(false);
   };
 
-  const getRadioStyle = (question, value) => {
-    if (!submitted) return {};
-    const isSelected = answers[question.id] === value;
-    const isCorrect = value === question.correct;
-
-    return {
-      accentColor: isSelected ? (isCorrect ? "green" : "red") : undefined,
-      pointerEvents: submitted ? "none" : "auto", // Prevent interaction after submit
-    };
-  };
-
   return (
     <div className="flex justify-center items-center min-h-screen p-6">
       <div className="max-w-3xl w-full bg-white rounded-xl shadow-md p-6 space-y-6">
