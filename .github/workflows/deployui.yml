@@ -1,0 +1,50 @@
+name: react UI CI
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AZURE_WEBAPP_NAME: webapp-qansui-ind-002   # Set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'      # Set this to the path to your web app project, defaults to the repository root
+  NODE_VERSION: '20.x'                # Set this to the node version to use
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    # Check out the repo
+    - name: 'Checkout GitHub Action' 
+      uses: actions/checkout@main
+   
+    - uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Setup Node ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Update Browserslist data
+      run: npx update-browserslist-db@latest
+    
+    - name: 'npm install,and build' #and test
+      run: |
+        npm install
+        npm run build --if-present
+
+    # npm run test --if-present
+     
+               
+    # Deploy web app using Azure credentials
+    - uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: ./build
+
+    # Azure logout 
+    - name: logout
+      run: |
+        az logout

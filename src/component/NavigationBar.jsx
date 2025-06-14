@@ -1,6 +1,5 @@
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import {Nav, Navbar, Button,NavDropdown } from 'react-bootstrap';
-import { loginRequest } from '../auth-config'
 // import { LinkContainer } from 'react-router-bootstrap';
 import { Link } from "react-router-dom";
 

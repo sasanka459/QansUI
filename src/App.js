@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-
 import { PageLayout } from './component/authntication/PageLayout';
 import Abc from './component/authntication/Abc'
-import Second from './component/Second';
 import { loginRequest } from './auth-config';
 import { callMsGraph } from './graph';
 import { ProfileData } from './component/authntication/ProfileData';

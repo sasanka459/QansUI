@@ -1,4 +1,3 @@
-import React from 'react'
 import {LogLevel} from '@azure/msal-browser'
 
 export const msalConfig ={
