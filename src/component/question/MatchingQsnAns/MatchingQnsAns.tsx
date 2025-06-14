@@ -27,7 +27,6 @@ interface Description {
 }
 
 //Hardcoded list of services with initial state  and descriptions with their corresponding correct service matches
-
 const services: Service[] = [
   { id: 1, name: 'Azure Key Vault', matchedDescriptionId: null },
   { id: 2, name: 'Azure App Service', matchedDescriptionId: null },
@@ -45,7 +44,6 @@ const descriptions: Description[] = [
   { id: 5, text: 'Run virtualized operating systems', correctServiceId: 3 },
   { id: 6, text: 'Store unstructured data like images and videos', correctServiceId: 4 },
   { id: 7, text: 'Globally distributed, multi-model database service', correctServiceId: 5 },
-  // No correct match
 ];
 
 /**  ServiceItem is a component that represents a single Azure service row.
@@ -62,33 +60,45 @@ const ServiceItem = ({
   matchedDescription,
   onDrop,
   onRemove,
+  showResults,
+  canDrop,
 }: {
   service: Service;
   matchedDescription: Description | null;
   onDrop: (serviceId: number, descriptionId: number) => void;
   onRemove: (descriptionId: number) => void;
+  showResults: boolean;
+  canDrop: boolean;
 }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'description',
     drop: (item: { id: number }) => {
       onDrop(service.id, item.id);
     },
+    canDrop: () => canDrop,
     collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+      isOver: canDrop && !!monitor.isOver(),
     }),
   }));
+
+  const isCorrect = matchedDescription 
+    ? matchedDescription.correctServiceId === service.id
+    : false;
 
   return (
     <div
       ref={drop}
-      className={`${styles.serviceItem} ${isOver ? styles.serviceItemOver : ''}`}
+      className={`${styles.serviceItem} ${isOver ? styles.serviceItemOver : ''} ${
+        showResults && matchedDescription ? (isCorrect ? styles.correctMatch : styles.incorrectMatch) : ''
+      }`}
     >
       <div className={styles.serviceName}>{service.name}</div>
       {matchedDescription && (
         <DraggableDescription 
           description={matchedDescription} 
           isMatched={true}
-          isCorrect={matchedDescription.correctServiceId === service.id}
+          isCorrect={isCorrect}
+          showResults={showResults}
           onRemove={() => onRemove(matchedDescription.id)}
         />
       )}
@@ -107,22 +117,25 @@ const DraggableDescription = ({
   description, 
   isMatched = false, 
   isCorrect = true,
+  showResults = false,
   onRemove
 }: { 
   description: Description;
   isMatched?: boolean;
   isCorrect?: boolean;
+  showResults?: boolean;
   onRemove?: () => void;
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'description',
     item: { id: description.id },
+    canDrag: !showResults && !isMatched,
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
   }));
 
-  /** Handles the remove (×) button click for matched descriptions.
+    /** Handles the remove (×) button click for matched descriptions.
   * Stops event propagation and calls the onRemove callback if provided.
   **/
   const handleRemove = (e: React.MouseEvent) => {
@@ -134,17 +147,22 @@ const DraggableDescription = ({
     <div
       ref={drag}
       className={`${styles.description} ${isDragging ? styles.descriptionDragging : ''} ${
-        !isCorrect ? styles.descriptionIncorrect : ''
-      }`}
+        showResults && !isCorrect ? styles.descriptionIncorrect : ''
+      } ${showResults && isCorrect ? styles.descriptionCorrect : ''}`}
     >
       {description.text}
-      {isMatched && (
+      {isMatched && !showResults && (
         <button 
           onClick={handleRemove}
           className={styles.removeButton}
         >
           ×
         </button>
+      )}
+      {showResults && (
+        <span className={styles.resultIndicator}>
+          {isCorrect ? '✓' : '✗'}
+        </span>
       )}
     </div>
   );
@@ -156,12 +174,12 @@ const DraggableDescription = ({
  * Handles dropping, removing, and resetting matches.
  */
 export default function MatchingQnsAns() {
-  // State for the current matched services
   const [servicesState, setServicesState] = useState<Service[]>(services);
-  // State for descriptions that are not yet matched
   const [unmatchedDescriptions, setUnmatchedDescriptions] = useState<Description[]>(descriptions);
+  const [showResults, setShowResults] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  /**
+    /**
    * Handles dropping a description onto a service.
    * Updates the matched service and removes the description from the unmatched list.
    */
@@ -186,7 +204,7 @@ export default function MatchingQnsAns() {
     setUnmatchedDescriptions(prev => prev.filter(d => d.id !== descriptionId));
   };
 
-  /**
+    /**
    * Handles removing a matched description from a service.
    * Unmatches the description and returns it to the unmatched list.
    */
@@ -206,9 +224,9 @@ export default function MatchingQnsAns() {
     }
   };
 
-  const resetMatches = () => {
-    setServicesState(services.map(service => ({ ...service, matchedDescriptionId: null })));
-    setUnmatchedDescriptions(descriptions);
+  const handleSubmit = () => {
+    setShowResults(true);
+    setIsSubmitted(true);
   };
 
   return (
@@ -230,25 +248,33 @@ export default function MatchingQnsAns() {
                   matchedDescription={matchedDescription || null}
                   onDrop={handleDrop}
                   onRemove={handleRemoveDescription}
+                  showResults={showResults}
+                  canDrop={!service.matchedDescriptionId && !isSubmitted}
                 />
               );
             })}
           </div>
 
           <div className={styles.column}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 className={styles.sectionHeader}>Descriptions</h2>
-              <button 
-                onClick={resetMatches}
-                className={styles.resetButton}
-              >
-                Reset
-              </button>
-            </div>
+            <h2 className={styles.sectionHeader}>Descriptions</h2>
             {unmatchedDescriptions.map(description => (
-              <DraggableDescription key={description.id} description={description} />
+              <DraggableDescription 
+                key={description.id} 
+                description={description} 
+                showResults={showResults}
+              />
             ))}
           </div>
+        </div>
+
+        <div className={styles.footer}>
+          <button 
+            onClick={handleSubmit}
+            className={styles.submitButton}
+            //disabled={isSubmitted || unmatchedDescriptions.length === descriptions.length}
+          >
+            {isSubmitted ? 'Submitted' : 'Submit'}
+          </button>
         </div>
       </div>
     </DndProvider>
