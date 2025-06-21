@@ -31,7 +31,7 @@ import Dropdowninsidetext from '../question/Dropdowninsidetext'
 import MatchingQnsAns from "../question/MatchingQsnAns/MatchingQnsAns.tsx";
 import BooleanApp from "../question/BooleanQnsAns.jsx";
 import MultipleDropDownQns from "../question/MultipleDropDownQns.jsx";
-
+import CreateBoolQans from "../question/boolqans/CreateBoolQans.jsx"
 
 
 const Abc = () => {
@@ -83,6 +83,9 @@ const multichoicerestrictedoptions_question = "Which of the following services a
      <div>
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+
+
+      <CreateBoolQans/>
       <MutipleOptionQuestion data={dummyData} />
 
       <Multichoicerestrictedoptions question={multichoicerestrictedoptions_question} options={multichoicerestrictedoptions_options}/>
