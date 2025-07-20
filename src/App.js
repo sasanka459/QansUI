@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import './App.css';
 import Button from 'react-bootstrap/Button';
+import CreateBoolQans from './component/question/boolqans/CreateBoolQans';
 
 
 
@@ -71,6 +72,7 @@ export default function App() {
             <MainContent />
         </PageLayout>} />
         <Route path="/about" element={<Abc/>} />
+        <Route path="/boolQans" element={<CreateBoolQans/>}/>
         <Route path="/main" element={<MainContent/>} />
       </Routes>
       </Router> 

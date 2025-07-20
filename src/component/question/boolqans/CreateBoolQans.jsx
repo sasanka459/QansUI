@@ -1,8 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { NavigationBar } from '../../NavigationBar';
+import TopicSelector from '../../topic/TopicSelector';
+import ChapterSelector from '../../chapter/ChapterSelector';
+
 
 const CreateBoolQans = () => {
+
+//Dummy data (This need to be fetched from API)
+const topicsData = {
+  azure: [
+    { id: 'az-net', name: 'Networking', description: 'Covers VNets, NSGs, and more' },
+    { id: 'az-sec', name: 'Security', description: 'Covers Key Vault, RBAC, etc.' },
+    { id: 'az-comp', name: 'Compute', description: 'Focus on VMs, App Services' }
+  ],
+  AWS: [
+    { id: 'aws-vpc', name: 'VPC', description: 'Virtual Private Cloud in AWS' },
+    { id: 'aws-iam', name: 'IAM', description: 'Identity and Access Management' },
+    { id: 'aws-ec2', name: 'EC2', description: 'Elastic Compute Cloud' }
+  ]
+};
+
+
+//Variable to store the default value of the topic i.e Azure/Aws
+ const [selectedTopic,SetselectedTopic]= useState('');
+
+ //Variable to store the default value of the chapter
+
+ const [selectedChapter,SetSelectedChapter]= useState(null);
+
+ //Variable to store selected sub module
+
+const [selectedModule,SetSelectedModule]= useState(null);
+
+ useEffect(()=>{
+if (selectedTopic) {
+  debugger;
+  //Clear the chapter drop down
+  SetSelectedChapter(null);
+}
+
+ },[selectedTopic]);
+
+useEffect(()=>{
+if (selectedChapter) {
+  SetSelectedModule(null)
+}
+
+},[selectedChapter])
+
+
   const [questions, setQuestions] = useState([]);
   const [form, setForm] = useState({
+   
     text: '',
     correct: 'Yes',
     description: ''
@@ -18,6 +67,9 @@ const CreateBoolQans = () => {
 
     const newQuestion = {
       id: questions.length + 1, // Auto-generate ID
+      topic:selectedTopic,
+      chapter:selectedChapter,
+      module:selectedModule,
       text: form.text,
       correct: form.correct,
       description: form.description
@@ -30,8 +82,30 @@ const CreateBoolQans = () => {
   const stringifyJson = () => JSON.stringify(questions);
 
   return (
-    <div style={{ padding: '1rem', fontFamily: 'sans-serif', maxWidth: 700 }}>
+    <>
+    <NavigationBar/>
+    <div style={{ padding: '1rem', fontFamily: 'sans-serif', maxWidth: 700,margin:'0 auto' }}>
       <h2>IAM A Boolean Questions Builder</h2>
+
+
+
+      <TopicSelector
+  topics={topicsData}
+  selectedTopic={selectedTopic}
+  onChange={SetselectedTopic}
+/>
+
+<ChapterSelector
+  topicKey={selectedTopic}
+  selectedChapter={selectedChapter}
+  onChange={SetSelectedChapter}
+/>
+
+<ChapterSelector
+  topicKey={selectedChapter}
+  selectedChapter={selectedModule}
+  onChange={SetSelectedModule}
+/>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         <textarea
@@ -82,6 +156,8 @@ const CreateBoolQans = () => {
         </>
       )}
     </div>
+
+    </>
   );
 };
 

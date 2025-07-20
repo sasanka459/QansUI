@@ -35,19 +35,14 @@ export const NavigationBar = () => {
           {/* <LinkContainer to="/about">
         <Nav.Link>About</Nav.Link>
       </LinkContainer> */}
-      <Link to="/about" >
-      About
-    </Link>
     <Nav.Link as={Link} to="/about">
       About
     </Nav.Link>
-    <Nav.Link  href="/about">
-      About
-    </Nav.Link>
+  
             <Nav.Link href="#features">Features</Nav.Link>
             
-            <NavDropdown title="Dropdown" id="collapsible-nav-dropdown">
-              <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+            <NavDropdown title="Create Question" id="collapsible-nav-dropdown">
+              <NavDropdown.Item href="/boolQans">Boolean Question Ans</NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
                 Another action
               </NavDropdown.Item>
