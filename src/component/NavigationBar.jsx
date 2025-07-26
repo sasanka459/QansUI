@@ -43,6 +43,7 @@ export const NavigationBar = () => {
             
             <NavDropdown title="Create Question" id="collapsible-nav-dropdown">
               <NavDropdown.Item href="/boolQans">Boolean Question Ans</NavDropdown.Item>
+               <NavDropdown.Item href="/OptionQans">Option Qans</NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
                 Another action
               </NavDropdown.Item>

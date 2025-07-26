@@ -2,23 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { NavigationBar } from '../../NavigationBar';
 import TopicSelector from '../../topic/TopicSelector';
 import ChapterSelector from '../../chapter/ChapterSelector';
+import OptionQnasCreate from './OptionQnasCreate';
+import QuestionDisplay from './QuestionDisplay';
 
 
 const CreateBoolQans = () => {
-
-//Dummy data (This need to be fetched from API)
-const topicsData = {
-  azure: [
-    { id: 'az-net', name: 'Networking', description: 'Covers VNets, NSGs, and more' },
-    { id: 'az-sec', name: 'Security', description: 'Covers Key Vault, RBAC, etc.' },
-    { id: 'az-comp', name: 'Compute', description: 'Focus on VMs, App Services' }
-  ],
-  AWS: [
-    { id: 'aws-vpc', name: 'VPC', description: 'Virtual Private Cloud in AWS' },
-    { id: 'aws-iam', name: 'IAM', description: 'Identity and Access Management' },
-    { id: 'aws-ec2', name: 'EC2', description: 'Elastic Compute Cloud' }
-  ]
-};
 
 
 //Variable to store the default value of the topic i.e Azure/Aws
@@ -29,8 +17,21 @@ const topicsData = {
  const [selectedChapter,SetSelectedChapter]= useState(null);
 
  //Variable to store selected sub module
-
 const [selectedModule,SetSelectedModule]= useState(null);
+
+const [preView, setPreview] = useState(true);
+const [showPreview, setShowPreview] = useState(true);
+const [showJson, setShowJson] = useState(false);
+
+
+
+ const [questions, setQuestions] = useState([]);
+  const [form, setForm] = useState({
+   
+    text: '',
+    correct: 'Yes',
+    description: ''
+  });
 
  useEffect(()=>{
 if (selectedTopic) {
@@ -49,13 +50,7 @@ if (selectedChapter) {
 },[selectedChapter])
 
 
-  const [questions, setQuestions] = useState([]);
-  const [form, setForm] = useState({
-   
-    text: '',
-    correct: 'Yes',
-    description: ''
-  });
+ 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -79,6 +74,23 @@ if (selectedChapter) {
     setForm({ text: '', correct: 'Yes', description: '' });
   };
 
+  const handleNewQuestion=(question)=>{
+
+      const newQuestion = {
+      id: questions.length + 1, // Auto-generate ID
+      topic:selectedTopic,
+      chapter:selectedChapter,
+      module:selectedModule,
+      qus: question,
+    
+    };
+
+    setQuestions([...questions, newQuestion]);
+
+  };
+
+
+
   const stringifyJson = () => JSON.stringify(questions);
 
   return (
@@ -90,7 +102,6 @@ if (selectedChapter) {
 
 
       <TopicSelector
-  topics={topicsData}
   selectedTopic={selectedTopic}
   onChange={SetselectedTopic}
 />
@@ -108,55 +119,69 @@ if (selectedChapter) {
 />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <textarea
-          name="text"
-          placeholder="Question Text"
-          value={form.text}
-          onChange={handleChange}
-        />
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="correct"
-              value="Yes"
-              checked={form.correct === 'Yes'}
-              onChange={handleChange}
-            />
-            Yes
-          </label>
-          {' '}
-          <label>
-            <input
-              type="radio"
-              name="correct"
-              value="No"
-              checked={form.correct === 'No'}
-              onChange={handleChange}
-            />
-            No
-          </label>
-        </div>
-        <textarea
-          name="description"
-          placeholder="Explanation / Description"
-          value={form.description}
-          onChange={handleChange}
-        />
-        <button onClick={handleAdd}>Add Question</button>
+        <OptionQnasCreate OnAdd={handleNewQuestion}></OptionQnasCreate>
       </div>
 
-      {questions.length > 0 && (
-        <>
-          <h3>Preview</h3>
-          <pre>{JSON.stringify(questions, null, 2)}</pre>
+     {questions.length > 0 && (
+  <>
+  <h3>
+      Preview{' '}
+      <button
+        className="btn btn-sm btn-link"
+        onClick={() => setPreview(!preView)}
+      >
+        {preView ? '⬆️ Collapse' : '⬇️ Expand'}
+      </button>
+    </h3>
+    {preView && (
+      <pre>{
+        questions.map((q) => (
+  <QuestionDisplay key={q.id} question={q} />
+))}
 
-          <h3>Stringified JSON</h3>
-          <textarea value={stringifyJson()} rows="10" cols="80" readOnly />
-        </>
-      )}
+        
+        </pre>
+    )}
+
+
+    <h3>
+      Json Preview{' '}
+      <button
+        className="btn btn-sm btn-link"
+        onClick={() => setShowPreview(!showPreview)}
+      >
+        {showPreview ? '⬆️ Collapse' : '⬇️ Expand'}
+      </button>
+    </h3>
+    {showPreview && (
+      <pre>{JSON.stringify(questions, null, 2)}</pre>
+    )}
+
+    <h3>
+      Stringified Json{' '}
+      <button
+        className="btn btn-sm btn-link"
+        onClick={() => setShowJson(!showJson)}
+      >
+        {showJson ? '⬆️ Collapse' : '⬇️ Expand'}
+      </button>
+    </h3>
+    {showJson && (
+      <textarea value={stringifyJson()} rows="10" cols="80" readOnly />
+    )}
+  </>
+)}
+
     </div>
-
+  <div className="col-10 mt-3 d-flex justify-content-center">
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={handleAdd}
+          >
+            ✅ Submit Question
+          </button>
+        </div>
     </>
   );
 };

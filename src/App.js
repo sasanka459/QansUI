@@ -10,6 +10,7 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/
 import './App.css';
 import Button from 'react-bootstrap/Button';
 import CreateBoolQans from './component/question/boolqans/CreateBoolQans';
+import OptionQansCreate from './component/question/boolqans/OptionQnasCreate'
 
 
 
@@ -73,6 +74,7 @@ export default function App() {
         </PageLayout>} />
         <Route path="/about" element={<Abc/>} />
         <Route path="/boolQans" element={<CreateBoolQans/>}/>
+        <Route path="/OptionQans" element={<OptionQansCreate/>}/>
         <Route path="/main" element={<MainContent/>} />
       </Routes>
       </Router> 
