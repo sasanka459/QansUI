@@ -6,6 +6,40 @@ const OptionQnasCreate = ({ OnAdd }) => {
   const [correctOptionIds, setCorrectOptionIds] = useState([]);
   const [description, setDescription] = useState('');
   const [optionId,setOptionId]= useState(1);
+  const [selectedExamId,setSelectedExams]=useState([]);
+
+  //need to fetch the exams from api
+
+  const exams=[
+  { "id": "AZ-900", "name": "Microsoft Azure Fundamentals" },
+  { "id": "AZ-104", "name": "Microsoft Azure Administrator" },
+  { "id": "AZ-305", "name": "Microsoft Azure Solutions Architect Expert" },
+  { "id": "AZ-400", "name": "Microsoft Azure DevOps Engineer Expert" },
+  { "id": "AZ-500", "name": "Microsoft Azure Security Technologies" },
+  { "id": "AZ-204", "name": "Developing Solutions for Microsoft Azure" },
+  { "id": "AZ-720", "name": "Troubleshooting Microsoft Azure Connectivity" },
+  { "id": "AZ-140", "name": "Configuring and Operating Microsoft Azure Virtual Desktop" },
+  { "id": "AZ-800", "name": "Administering Windows Server Hybrid Core Infrastructure" },
+  { "id": "AZ-801", "name": "Configuring Windows Server Hybrid Advanced Services" },
+  { "id": "DP-900", "name": "Microsoft Azure Data Fundamentals" },
+  { "id": "DP-300", "name": "Administering Relational Databases on Microsoft Azure" },
+  { "id": "DP-420", "name": "Designing and Implementing Cloud-Native Applications Using Microsoft Azure Cosmos DB" },
+  { "id": "AI-900", "name": "Microsoft Azure AI Fundamentals" },
+  { "id": "AI-102", "name": "Designing and Implementing an Azure AI Solution" },
+  { "id": "SC-900", "name": "Microsoft Security, Compliance, and Identity Fundamentals" },
+  { "id": "SC-200", "name": "Microsoft Security Operations Analyst" },
+  { "id": "SC-300", "name": "Microsoft Identity and Access Administrator" },
+  { "id": "SC-400", "name": "Microsoft Information Protection Administrator" },
+  { "id": "MB-910", "name": "Microsoft Dynamics 365 Fundamentals (CRM)" },
+  { "id": "MB-920", "name": "Microsoft Dynamics 365 Fundamentals (ERP)" }
+];
+
+
+  const handleExamSelection =(id)=>{
+    const updatedIds= selectedExamId.includes(id)? selectedExamId.filter(x=>x!==id):
+    [...selectedExamId,id];
+    setSelectedExams(updatedIds);
+  }
 
   const addOption = () => {
    
@@ -38,6 +72,7 @@ const OptionQnasCreate = ({ OnAdd }) => {
       correct: correctOptionIds,
       description,
       options,
+      selectedExamId
     };
     OnAdd(question);
     console.log('Saving question:', question);
@@ -84,7 +119,7 @@ const OptionQnasCreate = ({ OnAdd }) => {
             checked={correctOptionIds.includes(opt.id)}
             onChange={() => toggleCorrectOption(opt.id)}
             className="form-check-input ms-3"
-          />
+          />          
           <button
             type="button"
             className="btn btn-outline-danger ms-2"
@@ -111,6 +146,40 @@ const OptionQnasCreate = ({ OnAdd }) => {
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+
+
+<div className="row mt-3">
+  <div className="col-12 mb-2">
+    <label className="form-label fw-bold fs-5">🧪 Exams</label>
+  </div>
+
+  {exams.map((opt) => (
+    <div key={opt.id} className="col-md-6 mb-2">
+      <div className="form-check">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          value={opt.id}
+          checked={selectedExamId.includes(opt.id)}
+          onChange={() => handleExamSelection(opt.id)}
+          id={`exam-${opt.id}`}
+          style={{ transform: 'scale(1.3)' }} // Just enlarges the checkbox
+        />
+        <label
+          className="form-check-label fw-bold"
+          htmlFor={`exam-${opt.id}`}
+        >
+          {opt.id +" : "+ opt.name}
+        </label>
+      </div>
+    </div>
+  ))}
+</div>
+
+
+
+
+
       <div className="row mt-3">
        
 
