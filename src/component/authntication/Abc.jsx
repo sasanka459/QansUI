@@ -83,6 +83,7 @@ const multichoicerestrictedoptions_question = "Which of the following services a
      <div>
       <button onClick={callApi}>Call API</button>
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    
       <MutipleOptionQuestion data={dummyData} />
 
       <Multichoicerestrictedoptions question={multichoicerestrictedoptions_question} options={multichoicerestrictedoptions_options}/>
