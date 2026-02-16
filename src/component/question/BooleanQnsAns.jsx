@@ -82,23 +82,23 @@ function BooleanQnsAns() {
 
               {/* Show feedback only for answered questions */}
               {submitted && answers[q.id] && (
-                  <p style={{ fontWeight: "bold", marginTop: "5px" }}>
-                     {answers[q.id] === q.correct ? (
-                       <span style={{ color: "green" }}>✅ Correct</span>
-                   ) : (
-                     <>
-                       <span style={{ color: "red" }}>❌ <strong>Incorrect</strong></span>
-                       <br />
-                       <span style={{ color: "black" }}>Correct Answer: {q.correct}</span>
-                       <br />
-                       <span style={{ color: "blue", fontSize: "12px" }}>
-                           <strong style={{ color: "black", fontSize: "12px" }}>Explanation:</strong> {q.description}
-                       </span>
-                     </>
-                    )}
-                  </p>
-                )}
-                </div>              
+                <p style={{ fontWeight: "bold", marginTop: "5px" }}>
+                  {answers[q.id] === q.correct ? (
+                    <span style={{ color: "green" }}>✅ Correct</span>
+                  ) : (
+                    <>
+                      <span style={{ color: "red" }}>❌ <strong>Incorrect</strong></span>
+                      <br />
+                      <span style={{ color: "black" }}>Correct Answer: {q.correct}</span>
+                      <br />
+                      <span style={{ color: "blue", fontSize: "12px" }}>
+                        <strong style={{ color: "black", fontSize: "12px" }}>Explanation:</strong> {q.description}
+                      </span>
+                    </>
+                  )}
+                </p>
+              )}
+            </div>
           ))}
         </div>
 

@@ -11,6 +11,8 @@ import './App.css';
 import Button from 'react-bootstrap/Button';
 import CreateBoolQans from './component/question/boolqans/CreateBoolQans';
 import OptionQansCreate from './component/question/boolqans/OptionQnasCreate'
+import CreateExam from './component/Exams/CreateExam';
+import ExamList from './component/Exams/listAllExams';
 
 
 
@@ -76,6 +78,8 @@ export default function App() {
         <Route path="/boolQans" element={<CreateBoolQans/>}/>
         <Route path="/OptionQans" element={<OptionQansCreate/>}/>
         <Route path="/main" element={<MainContent/>} />
+        <Route path="/createExam" element={<CreateExam/>} />
+        <Route path="/ExamList" element={<ExamList/>} />
       </Routes>
       </Router> 
     );
