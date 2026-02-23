@@ -1,50 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText,
+  OutlinedInput,
+  CircularProgress,
+  Box, Paper
+} from '@mui/material';
+import RichTextEditor from '../../textBox/textEditor';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5100/api',
+  headers: { 'Content-Type': 'application/json' }
+});
 
 const OptionQnasCreate = ({ OnAdd }) => {
   const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState([]);
   const [correctOptionIds, setCorrectOptionIds] = useState([]);
   const [description, setDescription] = useState('');
-  const [optionId,setOptionId]= useState(1);
-  const [selectedExamId,setSelectedExams]=useState([]);
+  const [optionId, setOptionId] = useState(1);
 
-  //need to fetch the exams from api
+  // Exam states
+  const [exams, setExams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [selectedExamIds, setSelectedExamIds] = useState([]); // Unified state
 
-  const exams=[
-  { "id": "AZ-900", "name": "Microsoft Azure Fundamentals" },
-  { "id": "AZ-104", "name": "Microsoft Azure Administrator" },
-  { "id": "AZ-305", "name": "Microsoft Azure Solutions Architect Expert" },
-  { "id": "AZ-400", "name": "Microsoft Azure DevOps Engineer Expert" },
-  { "id": "AZ-500", "name": "Microsoft Azure Security Technologies" },
-  { "id": "AZ-204", "name": "Developing Solutions for Microsoft Azure" },
-  { "id": "AZ-720", "name": "Troubleshooting Microsoft Azure Connectivity" },
-  { "id": "AZ-140", "name": "Configuring and Operating Microsoft Azure Virtual Desktop" },
-  { "id": "AZ-800", "name": "Administering Windows Server Hybrid Core Infrastructure" },
-  { "id": "AZ-801", "name": "Configuring Windows Server Hybrid Advanced Services" },
-  { "id": "DP-900", "name": "Microsoft Azure Data Fundamentals" },
-  { "id": "DP-300", "name": "Administering Relational Databases on Microsoft Azure" },
-  { "id": "DP-420", "name": "Designing and Implementing Cloud-Native Applications Using Microsoft Azure Cosmos DB" },
-  { "id": "AI-900", "name": "Microsoft Azure AI Fundamentals" },
-  { "id": "AI-102", "name": "Designing and Implementing an Azure AI Solution" },
-  { "id": "SC-900", "name": "Microsoft Security, Compliance, and Identity Fundamentals" },
-  { "id": "SC-200", "name": "Microsoft Security Operations Analyst" },
-  { "id": "SC-300", "name": "Microsoft Identity and Access Administrator" },
-  { "id": "SC-400", "name": "Microsoft Information Protection Administrator" },
-  { "id": "MB-910", "name": "Microsoft Dynamics 365 Fundamentals (CRM)" },
-  { "id": "MB-920", "name": "Microsoft Dynamics 365 Fundamentals (ERP)" }
-];
+  useEffect(() => {
+    // Fetch active exams from the API
+    api.get('/Exam/GetAllExams')
+      .then((response) => {
+        const activeExams = response.data.filter(
+          exam => exam?.rowKey && exam?.examName && exam.isActive === true
+        );
+        setExams(activeExams);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching exams:', error);
+        setLoading(false);
+      });
+  }, []);
 
+  const handleExamSelection = (event) => {
+    const {
+      target: { value },
+    } = event;
 
-  const handleExamSelection =(id)=>{
-    const updatedIds= selectedExamId.includes(id)? selectedExamId.filter(x=>x!==id):
-    [...selectedExamId,id];
-    setSelectedExams(updatedIds);
-  }
+    // MUI multi-select returns an array of selected values
+    setSelectedExamIds(
+      typeof value === 'string' ? value.split(',') : value
+    );
+  };
 
   const addOption = () => {
-   
     setOptions([...options, { id: optionId, value: '' }]);
-    setOptionId(optionId+1);
+    setOptionId(optionId + 1);
   };
 
   const updateOption = (index, value) => {
@@ -65,34 +81,44 @@ const OptionQnasCreate = ({ OnAdd }) => {
   };
 
   const handleSubmit = () => {
-    debugger;
     const question = {
       id: Date.now(),
       text: questionText,
       correct: correctOptionIds,
       description,
       options,
-      selectedExamId
+      selectedExamIds // Fixed: Now correctly passes the selected exams
     };
+
     OnAdd(question);
     console.log('Saving question:', question);
     resetForm();
   };
 
   const resetForm = () => {
-  // 🔄 Reset form fields
-  setQuestionText('');
-  setOptions([]);
-  setCorrectOptionIds([]);
-  setDescription('');
-  setOptionId(1);
-  //U+1f600
-};
+    setQuestionText('');
+    setOptions([]);
+    setCorrectOptionIds([]);
+    setDescription('');
+    setOptionId(1);
+    setSelectedExamIds([]); // Fixed: Clears the exam dropdown on reset
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress size={32} />
+      </Box>
+    );
+  }
 
   return (
-    <div className="container mt-4">
+    <Paper className="container mt-4" elevation={4}
+      style={{ backgroundColor: (163, 150, 150, 0.2), boxShadow: 10, padding: 40 }}
+    >
       <h3 className="mb-4">📝 Add New Question 😀</h3>
 
+      {/* Question Text Input */}
       <div className="mb-3">
         <label className="form-label">Question</label>
         <input
@@ -103,97 +129,124 @@ const OptionQnasCreate = ({ OnAdd }) => {
         />
       </div>
 
-    
-
+      {/* Options List */}
       <label className="form-label">Options</label>
       {options.map((opt, i) => (
         <div key={opt.id} className="d-flex mb-2 align-items-center">
           <input
             type="text"
             className="form-control"
+            placeholder={`Option ${i + 1}`}
             value={opt.value}
             onChange={(e) => updateOption(i, e.target.value)}
           />
-          <input
-            type="checkbox"
-            checked={correctOptionIds.includes(opt.id)}
-            onChange={() => toggleCorrectOption(opt.id)}
-            className="form-check-input ms-3"
-          />          
+          <div className="form-check ms-3 mb-0 me-2 d-flex align-items-center">
+            <input
+              type="checkbox"
+              id={`checkbox-${opt.id}`}
+              checked={correctOptionIds.includes(opt.id)}
+              onChange={() => toggleCorrectOption(opt.id)}
+              className="form-check-input"
+              style={{ cursor: 'pointer', marginTop: 0 }}
+            />
+            <label className="form-check-label ms-2 mb-0" htmlFor={`checkbox-${opt.id}`}>
+              Correct
+            </label>
+          </div>
           <button
             type="button"
-            className="btn btn-outline-danger ms-2"
+            className="btn btn-outline-danger ms-auto"
             onClick={() => removeOption(opt.id)}
           >
             Remove
           </button>
         </div>
       ))}
- <div className="col text-end">
-          <button
-            type="button"
-            className="btn btn-outline-primary"
-            onClick={addOption}
-          >
-            ➕ Add Option
-          </button>
-        </div>
-  <div className="mb-3">
-        <label className="form-label">Description</label>
-        <textarea
-          className="form-control"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
 
-
-<div className="row mt-3">
-  <div className="col-12 mb-2">
-    <label className="form-label fw-bold fs-5">🧪 Exams</label>
-  </div>
-
-  {exams.map((opt) => (
-    <div key={opt.id} className="col-md-6 mb-2">
-      <div className="form-check">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          value={opt.id}
-          checked={selectedExamId.includes(opt.id)}
-          onChange={() => handleExamSelection(opt.id)}
-          id={`exam-${opt.id}`}
-          style={{ transform: 'scale(1.3)' }} // Just enlarges the checkbox
-        />
-        <label
-          className="form-check-label fw-bold"
-          htmlFor={`exam-${opt.id}`}
+      {/* Add Option Button */}
+      <div className="col text-end mb-3"
+        style={{ paddingBottom: 20 }}>
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          onClick={addOption}
         >
-          {opt.id +" : "+ opt.name}
-        </label>
+          ➕ Add Option
+        </button>
       </div>
-    </div>
-  ))}
-</div>
+
+      {/* Description Input */}
+      <RichTextEditor
+        label="Exam Description"
+        value={description}
+        onChange={(value) => setDescription(value)}
+        helperText={
+          validationErrors.includes("QuestionDescription cannot be empty.")
+            ? "QuestionDescription is required"
+            : "Enter Question details"
+        }
+        error={validationErrors.includes("examDescription cannot be empty.")}
+        height={200}
+      />
 
 
-
-
-
+      {/* Exams Dropdown */}
       <div className="row mt-3">
-       
+        <div className="col-12 mb-2">
+          <label className="form-label fw-bold fs-5">🧪 Exams</label>
+        </div>
+        <Box sx={{ minWidth: 300, maxWidth: '100%', margin: '10px 0' }}>
+          <FormControl fullWidth>
+            <InputLabel id="exam-multiple-checkbox-label">Select Active Exams</InputLabel>
+            <Select
+              labelId="exam-multiple-checkbox-label"
+              id="exam-multiple-checkbox"
+              multiple
+              value={selectedExamIds}
+              onChange={handleExamSelection}
+              input={<OutlinedInput label="Select Exams" />}
+              renderValue={(selected) => {
+                return selected
+                  .map(id => {
+                    const exam = exams.find(e => e.rowKey === id);
+                    return exam ? exam.examCode : id;
+                  })
+                  .join(', ');
+              }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 48 * 4.5 + 8,
+                    width: 250,
+                  },
+                },
+              }}
+            >
+              {exams.map((exam) => (
+                <MenuItem key={exam.rowKey} value={exam.rowKey}>
+                  <Checkbox checked={selectedExamIds.indexOf(exam.rowKey) > -1} />
+                  <ListItemText primary={`${exam.examCode} : ${exam.examName}`} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </div>
 
-        <div className="col-12 mt-3 d-flex justify-content-center">
+      {/* Submit Button */}
+      <div className="row mt-4">
+        <div className="col-12 d-flex justify-content-center mb-5">
           <button
             type="button"
-            className="btn btn-success"
+            className="btn btn-success px-4 py-2 fw-bold"
             onClick={handleSubmit}
+            disabled={!questionText || options.length < 2 || correctOptionIds.length === 0}
           >
             ✅ Create Question
           </button>
         </div>
       </div>
-    </div>
+    </Paper>
   );
 };
 
