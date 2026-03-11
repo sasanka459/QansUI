@@ -40,7 +40,7 @@ export const NavigationBar = () => {
               About
             </Nav.Link>
 
-            <Nav.Link href="#features">Features</Nav.Link>
+            <Nav.Link as={Link} to="/createQuestion">Create Question</Nav.Link>
 
             <NavDropdown title="Create Question" id="collapsible-nav-dropdown">
               <NavDropdown.Item href="/boolQans">Boolean Question Ans</NavDropdown.Item>

@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import {
-    Box, Grid, Container, Typography, Card, CardContent, Chip, Button,
+    Box, Container, Typography, Button,
     Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-    FormControlLabel, Switch, Snackbar, Alert
+    FormControlLabel, Switch, Snackbar, Alert,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, TableSortLabel, IconButton, Chip, Select, MenuItem, Stack
 } from '@mui/material';
-import { NavigationBar } from '../NavigationBar';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { NavigationBar } from '../NavigationBar';
 
 // API Configuration
 const api = axios.create({
@@ -23,17 +25,22 @@ const ExamList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Table State (Sorting & Filtering)
+    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('examCode');
+    const [filters, setFilters] = useState({
+        topic: '',
+        examCode: '',
+        examName: '',
+        examDescription: '',
+        isActive: 'all' // 'all', 'active', 'retired'
+    });
+
     // Edit Modal State
     const [openEditModal, setOpenEditModal] = useState(false);
     const [editData, setEditData] = useState({
-        partitionKey: '',
-        rowKey: '',
-        examCode: '',
-        examName: '',
-        examNumber: '',
-        topic: '',
-        examDescription: '',
-        isActive: false
+        partitionKey: '', rowKey: '', examCode: '', examName: '',
+        examNumber: '', topic: '', examDescription: '', isActive: false
     });
 
     // Notification State
@@ -44,7 +51,6 @@ const ExamList = () => {
         setLoading(true);
         api.get('/Exam/GetAllExams')
             .then((response) => {
-                // Ensure we include valid exams (both active and inactive so admins can see them)
                 const validExams = response.data.filter(exam => exam?.rowKey && exam?.examName);
                 setExams(validExams);
                 setLoading(false);
@@ -60,13 +66,67 @@ const ExamList = () => {
         fetchExams();
     }, []);
 
-    // --- 2. Handlers ---
+    // --- 2. Handlers for Table Features ---
+    const handleSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
 
-    // Open the modal and populate data
+    const handleFilterChange = (columnId, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [columnId]: value
+        }));
+    };
+
+    // --- 3. Sorting and Filtering Logic (Memoized for performance) ---
+    const filteredAndSortedExams = useMemo(() => {
+        // 1. Filter
+        let processedData = exams.filter((exam) => {
+            return Object.keys(filters).every((key) => {
+                const filterValue = filters[key];
+                if (!filterValue || filterValue === 'all') return true;
+
+                if (key === 'isActive') {
+                    const isActiveTarget = filterValue === 'active';
+                    return exam.isActive === isActiveTarget;
+                }
+
+                const examValue = String(exam[key] || '').toLowerCase();
+                return examValue.includes(filterValue.toLowerCase());
+            });
+        });
+
+        // 2. Sort
+        processedData.sort((a, b) => {
+            let valA = a[orderBy] || '';
+            let valB = b[orderBy] || '';
+
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+
+            if (valA < valB) return order === 'asc' ? -1 : 1;
+            if (valA > valB) return order === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return processedData;
+    }, [exams, filters, order, orderBy]);
+
+    const handleDetailsClick = (exam) => {
+        // Replace 'exam.url' with the actual property name from your database
+        if (exam && exam.detailsLink) {
+            window.location.href = exam.detailsLink;
+        } else {
+            console.error("No URL provided for this exam.");
+        }
+    }
+    // --- 4. Edit Handlers ---
     const handleEditClick = (exam) => {
         setEditData({
-            partitionKey: exam.partitionKey, // PK is usually Topic
-            rowKey: exam.rowKey, // RK is usually ExamCode
+            partitionKey: exam.partitionKey,
+            rowKey: exam.rowKey,
             examCode: exam.examCode,
             examName: exam.examName,
             examNumber: exam.examNumber || '',
@@ -77,7 +137,6 @@ const ExamList = () => {
         setOpenEditModal(true);
     };
 
-    // Handle Input Changes in Modal
     const handleInputChange = (e) => {
         const { name, value, checked, type } = e.target;
         setEditData(prev => ({
@@ -86,13 +145,12 @@ const ExamList = () => {
         }));
     };
 
-    // Submit Update to Backend
     const handleSaveUpdate = () => {
         api.put('/Exam/UpdateExam', editData)
             .then(() => {
                 setNotification({ open: true, message: 'Exam updated successfully!', severity: 'success' });
                 setOpenEditModal(false);
-                fetchExams(); // Refresh list to show changes
+                fetchExams();
             })
             .catch((err) => {
                 console.error("Update failed:", err);
@@ -102,125 +160,167 @@ const ExamList = () => {
 
     const handleCloseNotification = () => setNotification({ ...notification, open: false });
 
+    // --- Columns Configuration ---
+    const columns = [
+        { id: 'topic', label: 'Topic' },
+        { id: 'examCode', label: 'Exam Code' },
+        { id: 'examName', label: 'Exam Name' },
+        { id: 'examDescription', label: 'Description' },
+        { id: 'isActive', label: 'Status' }
+    ];
+
     // --- Render ---
-    if (loading) return <div style={{
-        position: "fixed",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "rgba(0,0,0,0.15)", // optional overlay
-        zIndex: 1300,
-        color: "135deg(207, 220, 253)"
-    }}>
-        <CircularProgress size={60} thickness={4} />
-    </div>;
+    if (loading) return (
+        <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.15)", zIndex: 1300 }}>
+            <CircularProgress size={60} thickness={4} />
+        </div>
+    );
+
     if (error) return <div style={{ textAlign: 'center', color: 'red', marginTop: 50 }}><ErrorOutlineIcon sx={{ mr: 1 }} />{error}</div>;
 
+    // Utility function to safely extract plain text from HTML (for description preview)
+    const renderRichText = (htmlString) => {
+        if (!htmlString) return '';
+
+        return (
+            <Box
+                dangerouslySetInnerHTML={{ __html: htmlString }}
+                sx={{
+                    // 1. Safely truncate the text with an ellipsis (...) for the table
+                    display: '-webkit-box',
+                    WebkitLineClamp: 1,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+
+                    // 2. Force block elements (like <p> from the editor) to stay inline
+                    '& p, & div, & h1, & h2, & h3, & h4, & h5, & h6': {
+                        display: 'inline',
+                        margin: 0,
+                        fontSize: 'inherit'
+                    },
+
+                    // 3. Enforce bold, italics, and underlines
+                    '& strong, & b': { fontWeight: 'bold' },
+                    '& em, & i': { fontStyle: 'italic' },
+                    '& u': { textDecoration: 'underline' }
+                }}
+            />
+        );
+    };
     return (
         <>
             <NavigationBar />
             <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-                <Box sx={{ textAlign: 'center', mb: 5 }}>
+                <Box sx={{ textAlign: 'center', mb: 4 }}>
                     <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
                         Azure Certification Library
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                        Available Exams: {exams.length}
+                        Showing {filteredAndSortedExams.length} of {exams.length} Exams
                     </Typography>
                 </Box>
 
-                <Grid container spacing={3}>
-                    {exams.map((exam) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={exam.rowKey}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: '16px', boxShadow: 3 }}>
-                                <CardContent>
-                                    <Box display="flex" justifyContent="space-between" mb={2}>
-                                        <Chip label={exam.topic} size="small" color="primary" variant="outlined" />
-                                        <Typography variant="caption" fontWeight="bold">{exam.examCode}</Typography>
-                                    </Box>
-                                    <Typography variant="h6" fontWeight="bold" gutterBottom>{exam.examName}</Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 3,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {exam.examDescription}
-                                    </Typography>
-                                </CardContent>
+                <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+                    <Table sx={{ minWidth: 650 }} aria-label="exam table">
+                        <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+                            <TableRow>
+                                {columns.map((col) => (
+                                    <TableCell key={col.id} sx={{ verticalAlign: 'top', minWidth: 150 }}>
+                                        <TableSortLabel
+                                            active={orderBy === col.id}
+                                            direction={orderBy === col.id ? order : 'asc'}
+                                            onClick={() => handleSort(col.id)}
+                                            sx={{ fontWeight: 'bold', mb: 1 }}
+                                        >
+                                            {col.label}
+                                        </TableSortLabel>
 
-                                <Box sx={{ p: 2, pt: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Box display="flex" alignItems="center">
-                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: exam.isActive ? 'success.main' : 'error.main', mr: 1 }} />
-                                        <Typography variant="caption" fontWeight="bold" color={exam.isActive ? 'success.main' : 'error.main'}>
-                                            {exam.isActive ? 'Active' : 'Retired'}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box>
-                                        <EditIcon
-                                            color="primary"
-                                            sx={{ cursor: 'pointer', mr: 1, '&:hover': { color: 'darkblue' } }}
-                                            onClick={() => handleEditClick(exam)}
-                                        />
-                                        <DeleteIcon
-                                            color="error"
-                                            sx={{ cursor: 'pointer', '&:hover': { color: 'darkred' } }}
-                                        />
-                                    </Box>
-                                </Box>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
+                                        {/* Column-specific filters */}
+                                        {col.id === 'isActive' ? (
+                                            <Select
+                                                size="small"
+                                                variant="standard"
+                                                fullWidth
+                                                value={filters.isActive}
+                                                onChange={(e) => handleFilterChange('isActive', e.target.value)}
+                                            >
+                                                <MenuItem value="all">All</MenuItem>
+                                                <MenuItem value="active">Active</MenuItem>
+                                                <MenuItem value="retired">Retired</MenuItem>
+                                            </Select>
+                                        ) : (
+                                            <TextField
+                                                size="small"
+                                                variant="standard"
+                                                placeholder={`Search...`}
+                                                fullWidth
+                                                value={filters[col.id]}
+                                                onChange={(e) => handleFilterChange(col.id, e.target.value)}
+                                            />
+                                        )}
+                                    </TableCell>
+                                ))}
+                                <TableCell align="center" sx={{ fontWeight: 'bold', verticalAlign: 'top' }}>
+                                    Actions
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredAndSortedExams.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                        <Typography variant="body1" color="text.secondary">No exams found matching your filters.</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filteredAndSortedExams.map((exam) => (
+                                    <TableRow key={exam.rowKey} hover>
+                                        <TableCell>
+                                            <Chip label={exam.topic} size="small" color="primary" variant="outlined" />
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>{exam.examCode}</TableCell>
+                                        <TableCell>{exam.examName}</TableCell>
+                                        <TableCell sx={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {renderRichText(exam.examDescription)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={exam.isActive ? 'Active' : 'Retired'}
+                                                size="small"
+                                                color={exam.isActive ? 'success' : 'error'}
+                                            />
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Stack direction="column" spacing={1} alignItems="center">
+                                                <Button variant="contained" size="small" onClick={() => handleDetailsClick(exam)}>
+                                                    Details
+                                                </Button>
+                                                <Stack direction="row" spacing={1} alignItems="center">
+                                                    <IconButton onClick={() => handleEditClick(exam)} color="primary" size="small">
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton color="error" size="small">
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </Stack></Stack>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
                 {/* --- EDIT DIALOG (MODAL) --- */}
+                {/* (Unchanged from your provided code, omitted here for brevity to focus on the Table layout. Just keep your existing Dialog code here!) */}
                 <Dialog open={openEditModal} onClose={() => setOpenEditModal(false)} maxWidth="sm" fullWidth>
                     <DialogTitle>Edit Exam: {editData.examCode}</DialogTitle>
                     <DialogContent>
-                        <TextField
-                            margin="dense"
-                            label="Exam Name"
-                            name="examName"
-                            fullWidth
-                            variant="outlined"
-                            value={editData.examName}
-                            onChange={handleInputChange}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Topic"
-                            name="topic"
-                            fullWidth
-                            variant="outlined"
-                            value={editData.topic}
-                            onChange={handleInputChange}
-                            helperText="Changing this creates a new partition key!"
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Description"
-                            name="examDescription"
-                            fullWidth
-                            multiline
-                            rows={4}
-                            variant="outlined"
-                            value={editData.examDescription}
-                            onChange={handleInputChange}
-                        />
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={editData.isActive}
-                                    onChange={handleInputChange}
-                                    name="isActive"
-                                    color="success"
-                                />
-                            }
-                            label={editData.isActive ? "Active" : "Retired"}
-                            sx={{ mt: 2 }}
-                        />
+                        <TextField margin="dense" label="Exam Name" name="examName" fullWidth variant="outlined" value={editData.examName} onChange={handleInputChange} />
+                        <TextField margin="dense" label="Topic" name="topic" fullWidth variant="outlined" value={editData.topic} onChange={handleInputChange} helperText="Changing this creates a new partition key!" />
+                        <TextField margin="dense" label="Description" name="examDescription" fullWidth multiline rows={4} variant="outlined" value={editData.examDescription} onChange={handleInputChange} />
+                        <FormControlLabel control={<Switch checked={editData.isActive} onChange={handleInputChange} name="isActive" color="success" />} label={editData.isActive ? "Active" : "Retired"} sx={{ mt: 2 }} />
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setOpenEditModal(false)} color="inherit">Cancel</Button>
@@ -230,10 +330,9 @@ const ExamList = () => {
 
                 {/* --- NOTIFICATIONS --- */}
                 <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification}>
-                    <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
-                        {notification.message}
-                    </Alert>
+                    <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>{notification.message}</Alert>
                 </Snackbar>
+
             </Container>
         </>
     );

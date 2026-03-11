@@ -49,11 +49,12 @@ export default function CreateExam() {
         examName: "",
         examDescription: "",
         sortingOrder: 1,
+        detailsLink: "",
         isActive: true,
         createdBy: getCurrentUser(),
-        createdAt: new Date().toISOString(),
+        createdDate: new Date().toISOString(),
         updatedBy: "",
-        updatedAt: "",
+        updatedDate: "",
     });
 
     // Track which fields have been focused and blurred
@@ -139,13 +140,13 @@ export default function CreateExam() {
         }
 
         // 3. Exam Number Validation
-        if (!formData.examNumber.trim()) {
-            errors.push("Exam Number is required.");
-            inlineErrors.examNumber = "Exam Number is required.";
-        } else if (existingExams.some(e => e.examNumber?.toLowerCase() === formData.examNumber.trim().toLowerCase())) {
-            errors.push("Exam Number already exists.");
-            inlineErrors.examNumber = "This Exam Number is already in use.";
-        }
+        // if (!formData.examNumber.trim()) {
+        //     errors.push("Exam Number is required.");
+        //     inlineErrors.examNumber = "Exam Number is required.";
+        // } else if (existingExams.some(e => e.examNumber?.toLowerCase() === formData.examNumber.trim().toLowerCase())) {
+        //     errors.push("Exam Number already exists.");
+        //     inlineErrors.examNumber = "This Exam Number is already in use.";
+        // }
 
         // 4. Exam Name Validation
         if (!formData.examName.trim()) {
@@ -180,8 +181,8 @@ export default function CreateExam() {
 
         // Mark all fields as touched to show errors if they try to bypass blur
         const allTouched = {
-            topic: true, examCode: true, examNumber: true,
-            examName: true, examDescription: true, sortingOrder: true
+            topic: true, examCode: true,
+            examName: true, examDescription: true, sortingOrder: true, detailsLink: true
         };
         setTouched(allTouched);
 
@@ -198,9 +199,12 @@ export default function CreateExam() {
                 examName: formData.examName.trim(),
                 examDescription: formData.examDescription,
                 sortingOrder: parseInt(formData.sortingOrder),
+                detailsLink: formData.detailsLink.trim(),
                 isActive: formData.isActive,
                 createdBy: formData.createdBy,
-                createdAt: formData.createdAt,
+                createdDate: formData.createdDate,
+                updatedBy: formData.updatedBy || null,
+                updatedDate: formData.updatedDate || null,
             };
 
             const response = await api.post('/Exam/CreateExam', examData);
@@ -220,11 +224,12 @@ export default function CreateExam() {
                 examName: "",
                 examDescription: "",
                 sortingOrder: 1,
+                detailsLink: "",
                 isActive: true,
                 createdBy: getCurrentUser(),
-                createdAt: new Date().toISOString(),
+                createdDate: new Date().toISOString(),
                 updatedBy: "",
-                updatedAt: "",
+                updatedDate: "",
             });
 
         } catch (error) {
@@ -315,7 +320,7 @@ export default function CreateExam() {
                                         helperText={touched.examCode && fieldErrors.examCode}
                                     />
 
-                                    <TextField
+                                    {/* <TextField
                                         fullWidth
                                         required
                                         label="Exam Number"
@@ -327,7 +332,7 @@ export default function CreateExam() {
                                         placeholder="e.g., 001 or EX-001"
                                         error={touched.examNumber && !!fieldErrors.examNumber}
                                         helperText={touched.examNumber && fieldErrors.examNumber}
-                                    />
+                                    /> */}
 
                                     <TextField
                                         fullWidth
@@ -347,7 +352,7 @@ export default function CreateExam() {
                                         {RichTextEditor ? (
                                             <Box>
                                                 <RichTextEditor
-                                                    label="Exam Description (Rich Text) *"
+                                                    label="Exam Description "
                                                     value={formData.examDescription}
                                                     onChange={handleexamDescriptionChange}
                                                     height={200}
@@ -380,15 +385,15 @@ export default function CreateExam() {
                                     <TextField
                                         fullWidth
                                         required
-                                        label="Exam Details"
-                                        name="examDetails"
+                                        label="Details Link"
+                                        name="detailsLink"
                                         type="text"
-                                        value={formData.examName}
+                                        value={formData.detailsLink}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
                                         placeholder="e.g., Midterm Assessment"
-                                        error={touched.examName && !!fieldErrors.examName}
-                                        helperText={touched.examName && fieldErrors.examName}
+                                        error={touched.detailsLink && !!fieldErrors.detailsLink}
+                                        helperText={touched.detailsLink && fieldErrors.detailsLink}
                                     />
 
                                     <TextField
@@ -434,7 +439,7 @@ export default function CreateExam() {
                                             <TextField
                                                 fullWidth
                                                 label="Created At (UTC)"
-                                                value={new Date(formData.createdAt).toLocaleString()}
+                                                value={new Date(formData.createdDate).toLocaleString()}
                                                 disabled
                                                 variant="filled"
                                             />
@@ -452,7 +457,7 @@ export default function CreateExam() {
                                             <TextField
                                                 fullWidth
                                                 label="Updated At (UTC)"
-                                                value={formData.updatedAt ? new Date(formData.updatedAt).toLocaleString() : 'Not yet updated'}
+                                                value={formData.updatedDate ? new Date(formData.updatedDate).toLocaleString() : 'Not yet updated'}
                                                 disabled
                                                 variant="filled"
                                             />
